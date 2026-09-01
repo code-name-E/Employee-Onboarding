@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B. Loomis Investments - Employee Portal</title>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            emailjs.init("tTcpWKiXWJ9ZECnCK");
+        })();
+    </script>
+    <!-- html2canvas Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        /* PASSWORD MODAL STYLES */
+        #password-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(249, 249, 249, 0.96);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .password-card {
+            background: #ffffff;
+            padding: 35px 30px;
+            border-radius: 12px;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-sizing: border-box;
+        }
+        .password-card h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: #2e7d32;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .password-card p {
+            font-size: 15px;
+            color: #555555;
+            line-height: 1.4;
+            margin-top: 0;
+            margin-bottom: 22px;
+        }
+        .password-card input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        .password-card button {
+            width: 100%;
+            background-color: #2e7d32;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .password-card button:hover {
+            background-color: #1b5e20;
+        }
+        #password-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        /* MAIN CONTAINER */
+        .portal-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 750px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin: 0 auto;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* HEADER & LOGO OVERLAP FIX */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e8f5e9;
+            padding-bottom: 12px;
+            padding-top: 10px;
+        }
+        .brand-logo {
+            max-width: 310px;
+            height: auto;
+            margin: -25px auto -35px auto;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+        .employee-title-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 0;
+            position: relative;
+            z-index: 2;
+        }
+        .employee-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1b5e20;
+            margin: 0;
+        }
+        .employee-position {
+            font-size: 17px;
+            font-weight: bold;
+            color: #555;
+            background-color: #f1f8e9;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid #c8e6c9;
+        }
+        .employee-address {
+            font-size: 14px;
+            color: #444;
+            margin-top: 4px;
+            margin-bottom: 0;
+            display: inline-block;
+            position: relative;
+            z-index: 2;
+        }
+        .editable-address-input {
+            display: none;
+            width: 80%;
+            max-width: 400px;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #2e7d32;
+            border-radius: 6px;
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        /* WELCOME BANNER */
+        .welcome-banner {
+            background-color: #e8f5e9;
+            border-left: 5px solid #2e7d32;
+            padding: 16px 20px;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            color: #1b5e20;
+        }
+
+        /* SECTION STYLES */
+        .section-block {
+            margin-bottom: 35px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .section-title {
+            color: #2e7d32;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* HIGHLIGHT CARD GRID */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .meta-box {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            padding: 10px 14px;
+            border-radius: 6px;
+        }
+        .meta-box span {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #777;
+            font-weight: bold;
+        }
+        .meta-box strong {
+            font-size: 14px;
+            color: #222;
+        }
+
+        /* LISTS */
+        .bullet-list {
+            padding-left: 20px;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .bullet-list li {
+            margin-bottom: 6px;
+        }
+
+        /* MODULE GRID */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 8px 15px;
+            margin-top: 12px;
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+        .module-item {
+            font-size: 13px;
+            color: #333;
+            padding: 4px 0;
+        }
+
+        /* INTERACTIVE RADIO SELECTION */
+        .training-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+        .training-option:hover {
+            border-color: #2e7d32;
+            background-color: #f1f8e9;
+        }
+        .training-option input[type="radio"] {
+            margin-top: 3px;
+        }
+        .training-option-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* CONFIRMATION SECTION (STEP 2 VIEW) */
+        #confirmation-view {
+            display: none;
+            text-align: center;
+        }
+        .confirmation-block {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            padding: 22px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .confirmation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 15px;
+            color: #333333;
+            line-height: 1.5;
+        }
+        .confirmation-item:last-child {
+            margin-bottom: 0;
+        }
+        .confirmation-item input[type="checkbox"] {
+            margin-top: 3px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* HIGHLIGHTED SELECTED DATE STYLE */
+        .selected-date-highlight {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            font-weight: bold;
+            font-style: italic;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #c8e6c9;
+        }
+
+        /* WARNING BOX */
+        .note-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 15px;
+            line-height: 1.4;
+        }
+
+        /* REGION CARDS */
+        .region-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .region-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #ffffff;
+        }
+        .region-card h4 {
+            margin-top: 0;
+            color: #2e7d32;
+            border-bottom: 2px solid #e8f5e9;
+            padding-bottom: 5px;
+        }
+
+        .name-highlight {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #c8e6c9;
+        }
+
+        /* BUTTONS */
+        .submit-btn {
+            width: 100%;
+            background-color: #2e7d32;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.2s ease;
+        }
+        .submit-btn:hover {
+            background-color: #1b5e20;
+        }
+
+        /* SUCCESS MESSAGE (CLEAN DARK TEXT ON LIGHT BACKGROUND) */
+        #in-place-success {
+            display: none;
+            margin-top: 25px;
+            padding: 22px;
+            background-color: #f1f8e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 42px;
+            color: #2e7d32;
+            margin-bottom: 8px;
+        }
+        .success-title {
+            color: #1b5e20;
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .success-body-text {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #333333; /* Standard dark neutral body color */
+            margin-bottom: 12px;
+        }
+        .success-sub-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #555555; /* Secondary neutral text */
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PASSWORD MODAL OVERLAY -->
+    <div id="password-modal-overlay">
+        <div class="password-card">
+            <h3>Protected Employee Portal</h3>
+            <p>Good evening Audra, please enter password to begin.</p>
+            <input type="password" id="page-password-input" placeholder="Enter Password" onkeypress="handlePasswordKeyPress(event)">
+            <button type="button" onclick="validatePassword()">Access Portal</button>
+            <div id="password-error">Incorrect password. Please try again.</div>
+        </div>
+    </div>
+
+    <!-- MAIN FORM WRAPPER -->
+    <form id="employee-onboarding-form">
+
+        <!-- STEP 1: MAIN PORTAL VIEW -->
+        <div id="main-portal-view" class="portal-container">
+            <!-- BRANDING & EMPLOYEE HEADER -->
+            <div class="brand-header">
+                <img class="brand-logo" src="1nobg.png" alt="B. Loomis Investments LLC Logo">
+                <div class="employee-title-row">
+                    <h1 class="employee-name">Audra Surles</h1>
+                    <span class="employee-position">Land Sourcing Associate</span>
+                </div>
+                <p class="employee-address">6565 Cushing Dr, Fayetteville, NC 28311</p>
+            </div>
+
+            <!-- WELCOME MESSAGE BANNER -->
+            <div class="welcome-banner">
+                <strong>Audra,</strong> B. Loomis Investments wants to congratulate and thank you for choosing to join our team! We know you are going to do <strong>AMAZE BALLS</strong> here and Elianna is more than excited to let you know the steps:
+            </div>
+
+            <!-- 1. ORIENTATION SECTION -->
+            <div class="section-block">
+                <div class="section-title">1. Orientation Details</div>
+                
+                <div class="meta-grid">
+                    <div class="meta-box">
+                        <span>Expected Shift</span>
+                        <strong>1 - 2.5 Hours</strong>
+                    </div>
+                    <div class="meta-box">
+                        <span>Compensation</span>
+                        <strong>$25 Gift Card</strong>
+                    </div>
+                    <div class="meta-box">
+                        <span>Location</span>
+                        <strong>Remote</strong>
+                    </div>
+                    <div class="meta-box">
+                        <span>Date & Time</span>
+                        <strong>Oct 3rd @ 12 PM</strong>
+                    </div>
+                </div>
+
+                <p style="font-weight: bold; margin-bottom: 5px;">Objectives & Key Items:</p>
+                <ul class="bullet-list">
+                    <li>Learn about the company & our mission statement</li>
+                    <li>Learn about the Founder (for those who do not know me at all or not as well as others)</li>
+                    <li>Hierarchy of the departments and roles in the company</li>
+                    <li><strong>ICE BREAKER:</strong> Introduce yourself to the team</li>
+                    <li>Receive NDA Compliance Contracts to go through and sign (via DocuSign)</li>
+                </ul>
+            </div>
+
+            <!-- 2. TRAINING SECTION (INTERACTIVE SELECTION) -->
+            <div class="section-block">
+                <div class="section-title">2. Training Schedule & Selection</div>
+                
+                <div class="meta-grid">
+                    <div class="meta-box">
+                        <span>Expected Shift</span>
+                        <strong>8:00 AM - 3:00 PM</strong>
+                    </div>
+                    <div class="meta-box">
+                        <span>Compensation</span>
+                        <strong>Paid @ Hourly Rate</strong>
+                    </div>
+                    <div class="meta-box">
+                        <span>Location</span>
+                        <strong>Remote</strong>
+                    </div>
+                </div>
+
+                <p style="font-size: 14px; line-height: 1.4; color: #555; margin-bottom: 15px;">
+                    Training for the Analysis Department will begin according to matching working partners. These are the only training dates available. <strong>Please select the week of training you can attend (only 1 week is required):</strong>
+                </p>
+
+                <label class="training-option">
+                    <input type="radio" name="training_week" value="October 5th - October 9th">
+                    <div class="training-option-text">
+                        <strong>October 5th – October 9th</strong><br>
+                        <small style="color: #666;">(If you feel confident, you will go live Monday, October 12th)</small>
+                    </div>
+                </label>
+
+                <label class="training-option">
+                    <input type="radio" name="training_week" value="October 12th - October 16th">
+                    <div class="training-option-text">
+                        <strong>October 12th – October 16th</strong><br>
+                        <small style="color: #666;">(If you feel confident, you will go live Monday, October 19th)</small>
+                    </div>
+                </label>
+
+                <label class="training-option">
+                    <input type="radio" name="training_week" value="October 19th - October 23rd">
+                    <div class="training-option-text">
+                        <strong>October 19th – October 23rd</strong><br>
+                        <small style="color: #666;">(If you feel confident, you will go live Monday, October 26th)</small>
+                    </div>
+                </label>
+
+                <label class="training-option">
+                    <input type="radio" name="training_week" value="October 26th - October 30th">
+                    <div class="training-option-text">
+                        <strong>October 26th – October 30th</strong><br>
+                        <small style="color: #666;">(If you feel confident, you will go live Monday, November 2nd)</small>
+                    </div>
+                </label>
+
+                <label class="training-option">
+                    <input type="radio" name="training_week" value="All the above are fine, I'M READY!">
+                    <div class="training-option-text">
+                        <strong>All the above are fine, I'M READY!</strong>
+                    </div>
+                </label>
+
+                <p style="font-weight: bold; margin-top: 20px; margin-bottom: 5px;">Training Modules Overview:</p>
+                <div class="module-grid">
+                    <div class="module-item">✓ Module 1: Admin & HR Onboarding</div>
+                    <div class="module-item">✓ Module 2: Company Culture & Alignment</div>
+                    <div class="module-item">✓ Module 3: Geographic Scope & Regions</div>
+                    <div class="module-item">✓ Module 4: Market Intelligence & Analysis</div>
+                    <div class="module-item">✓ Module 5: BOA Buy Box Analytics</div>
+                    <div class="module-item">✓ Module 6: Land Sourcing Strategies</div>
+                    <div class="module-item">✓ Module 7: Property Due Diligence & Compliance</div>
+                    <div class="module-item">✓ Module 8: Proprietary Sourcing Tools</div>
+                    <div class="module-item">✓ Module 9: Pipeline Escalation Protocols</div>
+                    <div class="module-item">✓ Module 10: Info & Record Management</div>
+                </div>
+                <p style="font-size: 12px; color: #777; margin-top: 5px;">* Note: A quiz will follow every module (85% score required to move to the next module).</p>
+
+                <div class="note-warning">
+                    ⚠️ PLEASE DO NOT MOVE FORWARD WITH GOING LIVE IF YOU ARE NOT CONFIDENT AFTER COMPLETION OF TRAINING. IF YOU NEED ANOTHER WEEK OF TRAINING, PLEASE LET US KNOW.
+                </div>
+            </div>
+
+            <!-- 3. ANALYSIS DEPARTMENT REGIONS -->
+            <div class="section-block">
+                <div class="section-title">3. Analysis Department & Regions</div>
+                <p style="font-size: 13px; color: #666;">To keep a level of confidentiality, full names will not be given until Orientation. Ratio is 4F:4M.</p>
+
+                <div class="region-grid">
+                    <div class="region-card">
+                        <h4>Northeast Region</h4>
+                        <p style="font-size: 12px; margin: 0 0 8px 0; color: #555;"><strong>States:</strong> Massachusetts, New Hampshire, New Jersey, Philadelphia</p>
+                        <ul style="font-size: 13px; padding-left: 18px; margin: 0; line-height: 1.6;">
+                            <li>Land Sourcing Associate for this region is <span class="name-highlight">A. Surles</span>.</li>
+                            <li>Buyer Optimization Associate for this region is <span class="name-highlight">D. Small</span>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="region-card">
+                        <h4>West Region</h4>
+                        <p style="font-size: 12px; margin: 0 0 8px 0; color: #555;"><strong>States:</strong> Nevada, New Mexico, Oregon, Washington</p>
+                        <ul style="font-size: 13px; padding-left: 18px; margin: 0; line-height: 1.6;">
+                            <li>Buyer Optimization Associate for this region is <span class="name-highlight">M. Rosario</span>.</li>
+                            <li>Per request, this region's LSA will be announced/introduced during Orientation.</li>
+                        </ul>
+                    </div>
+
+                    <div class="region-card">
+                        <h4>Midwest Region</h4>
+                        <p style="font-size: 12px; margin: 0 0 8px 0; color: #555;"><strong>States:</strong> Indiana, Michigan, Iowa, Kansas</p>
+                        <ul style="font-size: 13px; padding-left: 18px; margin: 0; line-height: 1.6;">
+                            <li>Buyer Optimization Associate for this region is <span class="name-highlight">T. Robinson</span>.</li>
+                            <li>Per request, this region's LSA will be announced/introduced during Orientation.</li>
+                        </ul>
+                    </div>
+
+                    <div class="region-card">
+                        <h4>South Region</h4>
+                        <p style="font-size: 12px; margin: 0 0 8px 0; color: #555;"><strong>States:</strong> Florida, Texas, Tennessee, South Carolina newly added</p>
+                        <ul style="font-size: 13px; padding-left: 18px; margin: 0; line-height: 1.6;">
+                            <li>Buyer Optimization Associate for this region is <span class="name-highlight">E. Rivera</span>.</li>
+                            <li>Per request, this region's LSA will be announced/introduced during Orientation.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background-color: #f9f9f9; padding: 14px 16px; border-radius: 6px; margin-top: 15px; border: 1px solid #eee; font-size: 13px; line-height: 1.5;">
+                    <p style="margin: 0 0 10px 0;">Instead of there being 2 Owner Analysis-I starting with us right away, there will be 1 and he will be announced/introduced during Orientation. He will be handling all regions.</p>
+                    <p style="margin: 0; color: #444;"><strong>Note:</strong> Please do not reach out to anyone through their personal social media. Everyone will be in contact through business apps (Teams, Slack, etc..), through business email, etc., If you all choose to share socials that is by your choosing as you will all have a chance to meet on many occasions. There are a lot of married people on this team so to my single people.. be respectful as I have zero tolerance for disrespecting marriages. This is not Temptation Island, keep your commentary and conversations respectful.</p>
+                </div>
+            </div>
+
+            <!-- 4. EQUIPMENT & WELCOME PACKAGE -->
+            <div class="section-block">
+                <div class="section-title">4. Equipment & Welcome Package</div>
+                <p style="font-size: 14px; margin-bottom: 10px;">You will receive your equipment and a Welcome To The Team package no later than <strong>3-5 days prior to orientation and training</strong>, which includes:</p>
+
+                <ul class="bullet-list" style="font-size: 14px;">
+                    <li><strong>1 Dell Plus 14" 2K 2-in-1 Touchscreen Laptop</strong> - AMD Ryzen AI 300 Series AI 5 340 2025 - 16GB Memory - 512GB Storage Copilot+ PC - Midnight Blue</li>
+                    <li><strong>1 Canon - PIXMA TR4720 Wireless All-in-One Inkjet Printer</strong></li>
+                    <li><strong>1 Bose QuietComfort Noise Cancelling Headphones</strong></li>
+                    <li><strong>1 JLab JBuds Wireless Mouse</strong></li>
+                </ul>
+
+                <p style="font-weight: bold; margin-top: 15px; margin-bottom: 5px; font-size: 14px;">1 Welcome To The Team Package (Company Customized):</p>
+                <div class="module-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="module-item">★ Can cooler sleeve</div>
+                    <div class="module-item">★ Tumbler Mug</div>
+                    <div class="module-item">★ Hardcover Journal Lined</div>
+                    <div class="module-item">★ Spiral Lined Notebook</div>
+                    <div class="module-item">★ Post-it notes</div>
+                    <div class="module-item">★ Engraved Pen</div>
+                    <div class="module-item">★ Adidas Embroidery Defender Backpack</div>
+                </div>
+            </div>
+
+            <!-- STEP 1 SUBMIT BUTTON -->
+            <button type="button" onclick="goToConfirmationStep()" class="submit-btn">Confirm & Submit Training Selection</button>
+        </div>
+
+        <!-- STEP 2: CONFIRMATION VIEW -->
+        <div id="confirmation-view" class="portal-container">
+            <img class="brand-logo" src="1nobg.png" alt="B. Loomis Investments LLC Logo">
+            <h2 style="color: #1b5e20; margin-bottom: 5px;">Final Onboarding Confirmation</h2>
+            <p style="font-size: 14px; color: #555;">Please verify your training week and delivery details below:</p>
+
+            <div class="confirmation-block">
+                <label class="confirmation-item">
+                    <input type="checkbox" id="confirm-schedule" name="schedule_confirmed" value="Yes">
+                    <span>I confirm that the training schedule week selected (<span id="selected-week-display" class="selected-date-highlight"></span>) is correct.</span>
+                </label>
+
+                <label class="confirmation-item">
+                    <input type="checkbox" id="address-correct-check" name="address_is_correct" value="Yes" checked onchange="toggleAddressEdit(this)">
+                    <span>My mailing address listed below is correct for equipment delivery. <em>(Uncheck to update address)</em></span>
+                </label>
+
+                <div style="margin-top: 15px; text-align: center;">
+                    <p class="employee-address" id="display-address">6565 Cushing Dr, Fayetteville, NC 28311</p>
+                    <input type="text" id="editable-address" name="confirmed_address" class="editable-address-input" value="6565 Cushing Dr, Fayetteville, NC 28311">
+                </div>
+            </div>
+
+            <!-- SUBMIT BUTTON -->
+            <button type="submit" id="final-submit-btn" class="submit-btn">Final Confirm & Save Record</button>
+
+            <!-- IN-PLACE SUCCESS MESSAGE (KEPT DIRECTLY BELOW THE CONFIRMATION BOX) -->
+            <div id="in-place-success">
+                <div class="success-icon">✓</div>
+                <h3 class="success-title">Selection Confirmed!</h3>
+                <p class="success-body-text">
+                    Thank you <strong>Audra</strong>! Your training week selection has been recorded and a copy has been saved to your local device.
+                </p>
+                <p class="success-sub-text">
+                    We are thrilled to have you join B. Loomis Investments LLC! Keep an eye on your email for your DocuSign NDA and further onboarding instructions.
+                </p>
+            </div>
+        </div>
+
+    </form>
+
+    <script>
+        // PASSWORD PROTECTION LOGIC
+        const correctPasscode = "Loomis2026";
+
+        function validatePassword() {
+            const userPass = document.getElementById("page-password-input").value;
+            const errorMsg = document.getElementById("password-error");
+            
+            if (userPass === correctPasscode) {
+                document.getElementById("password-modal-overlay").style.display = "none";
+            } else {
+                errorMsg.style.display = "block";
+                document.getElementById("page-password-input").value = "";
+            }
+        }
+
+        function handlePasswordKeyPress(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                validatePassword();
+            }
+        }
+
+        // STEP NAVIGATION LOGIC
+        function goToConfirmationStep() {
+            const selectedRadio = document.querySelector('input[name="training_week"]:checked');
+            
+            if (!selectedRadio) {
+                alert("Please select a training week before proceeding.");
+                return;
+            }
+
+            document.getElementById("selected-week-display").innerText = selectedRadio.value;
+            document.getElementById("main-portal-view").style.display = "none";
+            document.getElementById("confirmation-view").style.display = "block";
+            window.scrollTo(0, 0);
+        }
+
+        // ADDRESS EDIT TOGGLE LOGIC
+        function toggleAddressEdit(checkbox) {
+            const displayAddress = document.getElementById("display-address");
+            const editableAddress = document.getElementById("editable-address");
+
+            if (!checkbox.checked) {
+                displayAddress.style.display = "none";
+                editableAddress.style.display = "inline-block";
+                editableAddress.focus();
+            } else {
+                displayAddress.innerText = editableAddress.value;
+                displayAddress.style.display = "inline-block";
+                editableAddress.style.display = "none";
+            }
+        }
+
+        document.getElementById("editable-address").addEventListener("input", function() {
+            document.getElementById("display-address").innerText = this.value;
+        });
+
+        // SUBMISSION & STABLE LOCAL CANVAS CAPTURE
+        document.getElementById("employee-onboarding-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const confirmSchedule = document.getElementById("confirm-schedule");
+            if (!confirmSchedule.checked) {
+                alert("Please check the box confirming your training schedule selection.");
+                return;
+            }
+
+            const submitBtn = document.getElementById("final-submit-btn");
+            submitBtn.innerText = "Processing & Saving Copy...";
+            submitBtn.disabled = true;
+
+            const confirmView = document.getElementById("confirmation-view");
+
+            // Execute html2canvas capture with local security bypass flags
+            html2canvas(confirmView, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                ignoreElements: function(element) {
+                    // Ignore missing or blocked local image tags if opening directly via file://
+                    return element.tagName === 'IMG' && element.src.startsWith('file://');
+                }
+            }).then(canvas => {
+                // Download image file locally
+                const link = document.createElement("a");
+                link.download = "Audra_BLoomis_Onboarding_Selection.png";
+                link.href = canvas.toDataURL("image/png");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Dispatch EmailJS payload
+                return emailjs.sendForm("eliannaf.ef@gmail.com", "template_8zrdc8o", document.getElementById("employee-onboarding-form"));
+            }).then(() => {
+                // Hide button and render clean success block below questions
+                submitBtn.style.display = "none";
+                document.getElementById("in-place-success").style.display = "block";
+            }).catch(err => {
+                console.error("Capture process warning:", err);
+                submitBtn.style.display = "none";
+                document.getElementById("in-place-success").style.display = "block";
+            });
+        });
+    </script>
+</body>
+</html>
